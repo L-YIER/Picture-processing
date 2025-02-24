@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- 基本的元信息设置 -->
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>故知i 在线压缩图片</title>
+		<!-- 引入外部样式文件 -->
+		<link rel="stylesheet" href="style/css/style.css">
+		<script src="/style/js/fabric-handler.js"></script>
+		<style>
+			/* 隐藏文件上传按钮的默认文字 */
+			input[type="file"] {
+				color: transparent;
+			}
+
+			/* 自定义文件上传按钮样式 */
+			.inputstyle {
+				width: 144px;
+				height: 41px;
+				cursor: pointer;
+				font-size: 30px;
+				outline: medium none;
+				position: absolute;
+				filter: alpha(opacity=0);
+				-moz-opacity: 0;
+				opacity: 0;
+				left: 0px;
+				top: 0px;
+			}
+
+			/* 主要内容区域样式 */
+			.hero {
+				background: linear-gradient(45deg, #8b85f3, #7ac8ff);
+				padding: 20px 0;
+				min-height: 100vh;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			/* 表单布局样式 */
+			.hero-form {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: center;
+				flex-wrap: wrap;
+				gap: 20px;
+				margin: 0 auto;
+				width: 80%;
+				position: relative;
+			}
+
+			/* 控制按钮样式 */
+			.hero-form .control {
+				max-width: 180px;
+				width: 150px;
+				display: flex;
+				justify-content: center;
+				text-align: center;
+			}
+
+			/* 配置区域样式 */
+			.configuration {
+				margin: 20px 0;
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				justify-content: center;
+				gap: 10px;
+			}
+
+			/* 移动端响应式布局 */
+			@media(max-width:636px) {
+				#downloadBtn {
+					width: 100% !important;
+				}
+
+				#imgbox {
+					width: 95%;
+				}
+
+				.hero-form {
+					gap: 15px;
+				}
+
+				.hero-form .control {
+					width: 100%;
+					max-width: 100%;
+				}
+
+				.configuration {
+					flex-direction: column;
+				}
+
+				.configuration select {
+					width: 100%;
+					max-width: 300px;
+				}
+			}
+
+			/* 图片预览区域样式 */
+			#imgbox {
+				max-height: 400px;
+				overflow-y: auto;
+				padding: 20px;
+				background: rgba(255, 255, 255, 0.1);
+				border-radius: 10px;
+				margin-top: 20px;
+				position: relative;
+				left: 50%;
+				transform: translateX(-50%);
+				width: 80%;
+				-ms-overflow-style: auto;
+				scrollbar-width: auto;
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				align-items: center;
+				gap: 10px;
+			}
+
+			#imgbox::-webkit-scrollbar {
+				display: none;
+			}
+			#imgbox img {
+				max-width: 200px;
+				margin: 10px;
+				border-radius: 5px;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+			}
+			/* 标题区域样式 */
+			.hero-copy {
+				text-align: center;
+				color: white;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 20px;
+			}
+
+			/* 下拉选择框样式 */
+			select {
+				border: solid 1px #888;
+				border-radius: 5px;
+				padding: 10px;
+				background: white;
+			}
+
+			/* 文件输入框样式 */
+			#fileinput {
+				border: solid 1px #888;
+				width: 500px;
+				border-radius: 5px;
+				padding: 10px;
+			}
+
+			/* 下载按钮样式 */
+			#downloadBtn {
+				background-color: #ff557f;
+				border: solid 1px #e6e6e6;
+				color: #FFF !important;
+				display: inline-block;
+				width: 150px;
+				padding: 10px;
+				border-radius: 5px;
+				cursor: pointer;
+				outline: none;
+				transition: all 0.3s ease;
+			}
+
+			/* 主要按钮样式 */
+			.hero-form .control .button-primary {
+				background-color: #ff557f;
+				border: solid 1px #e6e6e6;
+				color: #FFF !important;
+				display: inline-block;
+				width: 150px;
+				padding: 10px;
+				border-radius: 5px;
+				cursor: pointer;
+				outline: none;
+				transition: all 0.3s ease;
+			}
+
+			/* 按钮悬停效果 */
+			.hero-form .control .button-primary:hover {
+				background-color: #ff3366;
+			}
+
+			/* 图片预览区域样式 */
+			#imgbox img {
+				max-width: 200px;
+				margin: 10px;
+				border-radius: 5px;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+			}
+		</style>
+	</head>
+	<body class="is-boxed has-animations">
+		<div class="body-wrap boxed-container">
+			<!-- 主要内容区域 -->
+			<main>
+				<section class="hero">
+					<div class="container">
+						<div class="hero-inner">
+							<div class="hero-copy">
+								<div class="container-sm">
+									<!-- 页面标题 -->
+									<h1 class="hero-title h2-mobile mt-0 is-revealing">免费在线图片压缩</h1>
+									<!-- 功能切换按钮 -->
+									<div class="nav-buttons">
+										<button class="nav-btn active"
+											onclick="switchComponent('compress')">图片压缩</button>
+										<button class="nav-btn" onclick="switchComponent('convert')">格式转换</button>
+									</div>
+									<!-- 图片压缩功能区域 -->
+									<div id="compressComponent">
+										<p class="hero-paragraph is-revealing" style="font-size: 0.8rem;">
+											小提示：选择图片时，按住ctrl键可以进行多选哦！</p>
+										<div>
+											<!-- 压缩配置选项 -->
+											<div class="configuration">
+												<span>压缩比例：</span>
+												<select id="quality">
+													<option value="0.8">20%</option>
+													<option value="0.6">40%</option>
+													<option value="0.4">60%</option>
+													<option value="0.2">80%</option>
+												</select>
+												&nbsp;&nbsp;&nbsp;
+												<span>最大宽度：</span>
+												<select id="maxwidth">
+													<option value="750">750</option>
+													<option value="640">640</option>
+													<option value="375">375</option>
+													<option value="320">320</option>
+												</select>
+												px
+											</div>
+											<br />
+										</div>
+										<div class="hero-form newsletter-form field field-grouped is-revealing">
+											<div class="control control-expanded">
+												<div class=" button button-primary button-block button-shadow">
+													<div class="">上传图片</div>
+													<input type="file" class="inputstyle" multiple="multiple"
+														id="fileinput" ref="input" accept="image/*">
+												</div>
+											</div>
+											<div class="control">
+												<button type="button" id="downloadBtn"
+													class=" button  button-block button-shadow">下载</button>
+											</div>
+										</div>
+									</div>
+									<div id="convertComponent">
+										<p class="hero-paragraph is-revealing">支持多种图片格式转换</p>
+										<div>
+											<div class="configuration">
+												<canvas id="fabricCanvas" style="display: none;"></canvas>
+												<span>转换格式：</span>
+												<select id="targetFormat">
+													<option value="jpeg">JPEG</option>
+													<option value="png">PNG</option>
+													<option value="webp">WebP</option>
+													<option value="gif">GIF</option>
+												</select>
+											</div>
+											<br />
+										</div>
+										<div class="hero-form newsletter-form field field-grouped is-revealing">
+											<div class="control control-expanded">
+												<div class=" button button-primary button-block button-shadow">
+													<div class="">上传图片</div>
+													<input type="file" class="inputstyle" multiple="multiple"
+														id="convertInput" ref="input" accept="image/*">
+												</div>
+											</div>
+											<div class="control">
+												<button type="button" id="convertBtn"
+													class="button button-primary button-block button-shadow">转换</button>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div id="loading"></div>
+								<br>
+								<div id="imgbox" class="frbkw"></div>
+							</div>
+
+						</div>
+					</div>
+				</section>
+			</main>
+
+			<footer class="site-footer text-light">
+				<div class="container">
+					<div class="site-footer-inner">
+						<div class="footer-copyright">&copy; 2022 2k <a href="https://github.com/L-YIER/Image-compression" target="_blank">在线图片压缩|开源地址 https://github.com/L-YIER/Image-compression</a>
+						</div>
+			</footer>
+		</div>
+
+		<script src="style/js/main.min.js"></script>
+		<script src="style/js/jszip.min.js"></script>
+		<script src="style/js/FileSaver.js"></script>
+		<script src="style/js/JCompressor.js"></script>
+		<script>
+			document.getElementById("fileinput").addEventListener("change", inputchange)
+			document.getElementById("convertInput").addEventListener("change", function() {
+				var imgbox = document.getElementById("imgbox");
+				imgbox.style.display = "block";
+				imgbox.innerHTML = "";
+				var files = this.files;
+				for (var i = 0; i < files.length; i++) {
+					var file = files[i];
+					if (file.type.indexOf("image") === 0) {
+						var reader = new FileReader();
+						reader.onload = function(e) {
+							var img = document.createElement("img");
+							img.src = e.target.result;
+							imgbox.appendChild(img);
+						};
+						reader.readAsDataURL(file);
+					}
+				}
+			})
+
+			function inputchange(_this) {
+				var _this = this;
+				var quality = document.getElementById("quality").value;
+				var maxWidth = document.getElementById("maxwidth").value;
+				var loadingDom = document.getElementById("loading");
+				var imgbox = document.getElementById("imgbox");
+				imgbox.style.display = "block";
+				JCompressor(_this, {
+					Quality: Number(quality),
+					MaxWidth: Number(maxWidth),
+					PreviewContainer: "imgbox",
+					FileLoad: function(filedata) {
+						_this.value = "";
+					},
+					NeedDownload: true,
+					DownloadLoad: function(nextfn) {
+						var btnDom = document.getElementById("downloadBtn");
+						btnDom.style.color = "white";
+						btnDom.style.borderColor = "#8b85f3";
+						btnDom.style.backgroundColor = "#8b85f3";
+						btnDom.onclick = function() {
+							nextfn();
+							btnDom.onclick = null;
+							btnDom.style.color = "";
+							btnDom.style.borderColor = "";
+						}
+					},
+					ChangeBefore: function() {
+						loadingDom.innerHTML = "处理中······";
+					},
+					ChangeAfter: function() {
+						loadingDom.innerHTML = "";
+					}
+				})
+			}
+		</script>
+		<style>
+			.nav-buttons {
+				display: flex;
+				justify-content: center;
+				gap: 20px;
+				margin-bottom: 20px;
+			}
+
+			.nav-btn {
+				background-color: rgba(255, 255, 255, 0.2);
+				border: 1px solid rgba(255, 255, 255, 0.3);
+				color: white;
+				padding: 10px 20px;
+				border-radius: 5px;
+				cursor: pointer;
+				transition: all 0.3s ease;
+			}
+
+			.nav-btn.active {
+				background-color: #ff557f;
+				border-color: #ff557f;
+			}
+
+			.nav-btn:hover {
+				background-color: #ff557f;
+				border-color: #ff557f;
+			}
+
+			#convertComponent {
+				display: none;
+			}
+		</style>
+		<script>
+			function switchComponent(type) {
+				const compressComp = document.getElementById('compressComponent');
+				const convertComp = document.getElementById('convertComponent');
+				const buttons = document.querySelectorAll('.nav-btn');
+				const loadingDom = document.getElementById('loading');
+
+				if (type === 'compress') {
+					compressComp.style.display = 'block';
+					convertComp.style.display = 'none';
+					buttons[0].classList.add('active');
+					buttons[1].classList.remove('active');
+					loadingDom.innerHTML = '';
+				} else {
+					compressComp.style.display = 'none';
+					convertComp.style.display = 'block';
+					buttons[0].classList.remove('active');
+					buttons[1].classList.add('active');
+					loadingDom.innerHTML = '';
+				}
+			}
+			document.getElementById('convertBtn').addEventListener('click', function() {
+    var files = document.getElementById('convertInput').files;
+    if (files.length === 0) {
+        alert('请上传图片!');
+        return;
+    }
+
+    var loadingDom = document.getElementById('loading');
+    loadingDom.innerHTML = '处理中······';
+
+    function processImage(file) {
+        var reader = new FileReader();
+        reader.onload = function() {
+            var image = new Image();
+            image.src = this.result;
+            image.onload = function() {
+                var canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                canvas.getContext('2d').drawImage(image, 0, 0);
+                
+                var format = document.getElementById('targetFormat').value;
+                var src = canvas.toDataURL('image/' + format);
+                
+                var link = document.createElement('a');
+                link.href = src;
+                link.download = file.name.split('.')[0] + '.' + format;
+                link.click();
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+
+    Array.from(files).forEach(processImage);
+    loadingDom.innerHTML = '';
+});
+		</script>
+		<style>
+			.nav-buttons {
+				display: flex;
+				justify-content: center;
+				gap: 20px;
+				margin-bottom: 20px;
+			}
+
+			.nav-btn {
+				background-color: rgba(255, 255, 255, 0.2);
+				border: 1px solid rgba(255, 255, 255, 0.3);
+				color: white;
+				padding: 10px 20px;
+				border-radius: 5px;
+				cursor: pointer;
+				transition: all 0.3s ease;
+			}
+
+			.nav-btn.active {
+				background-color: #ff557f;
+				border-color: #ff557f;
+			}
+
+			.nav-btn:hover {
+				background-color: #ff557f;
+				border-color: #ff557f;
+			}
+
+			#convertComponent {
+				display: none;
+			}
+		</style>
+		<script>
+			function switchComponent(type) {
+				const compressComp = document.getElementById('compressComponent');
+				const convertComp = document.getElementById('convertComponent');
+				const buttons = document.querySelectorAll('.nav-btn');
+				const loadingDom = document.getElementById('loading');
+
+				if (type === 'compress') {
+					compressComp.style.display = 'block';
+					convertComp.style.display = 'none';
+					buttons[0].classList.add('active');
+					buttons[1].classList.remove('active');
+					loadingDom.innerHTML = '';
+				} else {
+					compressComp.style.display = 'none';
+					convertComp.style.display = 'block';
+					buttons[0].classList.remove('active');
+					buttons[1].classList.add('active');
+					loadingDom.innerHTML = '';
+				}
+			}
+		</script>
+	</body>
+</html>
